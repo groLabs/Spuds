@@ -53,10 +53,6 @@ class SpudGame:
             return True
         return False
 
-    def _last_steal(self):
-        if len(self.available_numbers) == 1:
-            pass
-
     def _choose_number(self):
         """choose random thief & number"""
         self.steal_num += 1
