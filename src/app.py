@@ -1,5 +1,8 @@
 import random
 
+from typing import Tuple
+
+
 
 class SpudGame:
     def __init__(
@@ -33,7 +36,7 @@ class SpudGame:
             if not self._play_round():
                 break
 
-    def _play_round(self):
+    def _play_round(self) -> bool:
         """play a round"""
         if self._all_rekt():
             return False
@@ -46,14 +49,14 @@ class SpudGame:
 
         return self._check_result(thief, thief_guess, steal_fee)
 
-    def _all_rekt(self):
+    def _all_rekt(self) -> bool:
         """checks if all users have enough balance"""
         if all(balance < 10 for balance in self.players.values()):
             print("All players have run out of money. Game ends without a winner.")
             return True
         return False
 
-    def _choose_number(self):
+    def _choose_number(self) -> Tuple[str, int]:
         """choose random thief & number"""
         self.steal_num += 1
         thief = random.choice([p for p in self.players if p != self.current_holder])
@@ -61,7 +64,7 @@ class SpudGame:
         self.available_numbers.remove(thief_guess)
         return thief, thief_guess
 
-    def _update_fee(self):
+    def _update_fee(self) -> int:
         """Dynamic steal fee related to the chances of winning"""
         # Base fee
         base_fee = 2
@@ -84,7 +87,7 @@ class SpudGame:
         else:
             print(f"{thief} doesn't have enough funds to steal the spud.")
 
-    def _get_winner_reward(self):
+    def _get_winner_reward(self) -> int:
         """
         Calculate the percentage based on remaining numbers:
         early winners get less pool prize (e.g.: avoid 1 steal and get 80% of pool)
@@ -116,6 +119,7 @@ class SpudGame:
             return True
 
     def _show_round_result(self, thief, steal_fee):
+        """show thief balance, fee paid & current prize pool"""
         print(
             f"{self.steal_num:>2} - {thief:<5} stole 🥔 from {self.current_holder:<5} -> {thief:>5} "
             f"balance: ${self.players[thief]:.2f}, Steal fee: ${steal_fee:.2f} "
@@ -123,6 +127,7 @@ class SpudGame:
         )
 
     def _show_round_winner(self, thief, winner_reward):
+        """show thief winner and their net profit"""
         net_profit = winner_reward - (
             self.players_initial_balance[thief] - self.players[thief]
         )
