@@ -143,7 +143,7 @@ game = SpudGame(
     ["Alice", "Bob", "Mike"],
     total_numbers=20,  # total random numbers to choose from (1 to 20)
     initial_prize=100,  # initial prize pool in USD
-    pool_winner_percentage=0.8,  # remaining prize pool carried over the next game after allocating prize reward
+    pool_winner_percentage=0.8,  # prize pool awarded to the winner; the rest will be carried over (not implemented)
     max_fee=20,  # maximum fee cost
     balances=100,  # initial user balances
 )
