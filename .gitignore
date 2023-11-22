@@ -1,4 +1,18 @@
+# general
+/dist
+/build
 venv
 .env
 .DS_Store
+
+# react
+node_modules/
+
+# python
 __pycache__/
+
+# foundry
+/out
+/cache
+/forge-*
+/lib
