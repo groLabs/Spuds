@@ -4,6 +4,8 @@
 venv
 .env
 .DS_Store
+.idea
+
 
 # react
 node_modules/
