@@ -125,12 +125,8 @@ contract SpudGame {
     function claimPrizePool(uint256 _gameId) external {
         Game storage game = games[_gameId];
         // Check if game is still active
-        if (block.timestamp < game.deadline) {
+        if (block.timestamp < game.deadline || !game.exploded) {
             revert GameErrors.GameNotEnded();
-        }
-        // Check if game has already exploded
-        if (game.exploded) {
-            revert GameErrors.GameEnded();
         }
         // Update game
         game.exploded = true;
