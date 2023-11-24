@@ -14,7 +14,7 @@ contract SpudGameTest is Test {
     function setUp() public {
         // Deploy the SpudGame contract and the Spud contract within it
         spudGame = new SpudGame();
-        spud = Spud(spudGame.SPUD());
+        spud = spudGame.SPUD();
         player = address(1);
 
         // Assign some ETH to the player address

@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import { Spud } from "./SpudNFT.sol";
+import { ERC1155Holder } from "../../../../lib/openzeppelin-contracts/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 library GameErrors {
     // Min fee error
@@ -11,7 +12,7 @@ library GameErrors {
     error NotEnoughToSteal();
 }
 
-contract SpudGame {
+contract SpudGame is ERC1155Holder {
     /////////////////////////////////////////////////////////////////////////////
     //                                  Constants                              //
     /////////////////////////////////////////////////////////////////////////////
