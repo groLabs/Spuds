@@ -6,6 +6,8 @@ import { publicProvider } from "wagmi/providers/public";
 import { CoinbaseWalletConnector } from "wagmi/connectors/coinbaseWallet";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 import { ConnectWallet } from "./wallet/ConnectWallet";
+import { GameProvider } from "./game/GameProvider";
+import { JoinGame } from "./game/JoinGame";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [mainnet],
@@ -38,8 +40,13 @@ const config = createConfig({
 function App() {
   return (
     <WagmiConfig config={config}>
-      <Typography>Hello</Typography>
-      <ConnectWallet />
+      <GameProvider>
+        <>
+          <Typography>Hello</Typography>
+          <ConnectWallet />
+          <JoinGame />
+        </>
+      </GameProvider>
     </WagmiConfig>
   );
 }
