@@ -126,9 +126,7 @@ contract SpudGame is ERC1155Holder {
     function claimPrizePool(uint256 _gameId) external {
         Game storage game = games[_gameId];
         // Check if game is still active
-        if (block.timestamp < game.deadline || !game.exploded) {
-            revert GameErrors.GameNotEnded();
-        }
+        require(block.timestamp > game.deadline || game.exploded, "GameNotEnded");
         // Update game
         game.exploded = true;
         // Transfer prize pool to the current owner
