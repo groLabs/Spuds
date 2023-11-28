@@ -18,7 +18,11 @@ contract SpudGameTest is Test {
         player = address(1);
 
         // Assign some ETH to the player address
-        vm.deal(player, 1 ether);
+        vm.deal(player, 5 ether);
+
+        // Assign some ETH to the contract
+        // @dev: Not sure if this is needed
+        vm.deal(address(spudGame), 5 ether);
 
         // Start the game with the player sending the initial fee
         vm.startPrank(player);
@@ -50,6 +54,11 @@ contract SpudGameTest is Test {
     function testClaimPrizePool() public {
         // Simulate time passing and the game ending
         vm.warp(block.timestamp + 2 days);
+
+        // Log the current time and game deadline for debugging
+        (,,uint256 deadline,,) = spudGame.getGame(0);
+        console.log("Current timestamp:", block.timestamp);
+        console.log("Game deadline:", deadline);
 
         // Player attempts to claim the prize pool
         vm.startPrank(player);
