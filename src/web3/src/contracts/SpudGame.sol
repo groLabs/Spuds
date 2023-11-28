@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import { Spud } from "./SpudNFT.sol";
+import { ERC1155Holder } from "../../../../lib/openzeppelin-contracts/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 library GameErrors {
     // Min fee error
@@ -11,7 +12,7 @@ library GameErrors {
     error NotEnoughToSteal();
 }
 
-contract SpudGame {
+contract SpudGame is ERC1155Holder {
     /////////////////////////////////////////////////////////////////////////////
     //                                  Constants                              //
     /////////////////////////////////////////////////////////////////////////////
@@ -125,9 +126,7 @@ contract SpudGame {
     function claimPrizePool(uint256 _gameId) external {
         Game storage game = games[_gameId];
         // Check if game is still active
-        if (block.timestamp < game.deadline || !game.exploded) {
-            revert GameErrors.GameNotEnded();
-        }
+        require(block.timestamp > game.deadline || game.exploded, "GameNotEnded");
         // Update game
         game.exploded = true;
         // Transfer prize pool to the current owner
