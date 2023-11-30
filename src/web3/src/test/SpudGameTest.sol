@@ -42,7 +42,7 @@ contract SpudGameTest is Test {
         vm.deal(thief, 1 ether);
 
         vm.startPrank(thief);
-        spudGame.stealNFT{ value: 1 ether }(0);
+        spudGame.stealNFT{ value: 1 ether }(0, 10);
         vm.stopPrank();
 
         // Check the new owner is the thief

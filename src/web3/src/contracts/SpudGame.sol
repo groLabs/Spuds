@@ -3,6 +3,8 @@ pragma solidity 0.8.20;
 
 import { Spud } from "./SpudNFT.sol";
 import { ERC1155Holder } from "../../../../lib/openzeppelin-contracts/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import { VRFV2WrapperConsumerBase } from
+    "../../../../lib/foundry-chainlink-toolkit/lib/chainlink-brownie-contracts/contracts/src/v0.8/VRFV2WrapperConsumerBase.sol";
 
 library GameErrors {
     // Min fee error
@@ -10,9 +12,10 @@ library GameErrors {
     error GameEnded();
     error GameNotEnded();
     error NotEnoughToSteal();
+    error InvalidGuess();
 }
 
-contract SpudGame is ERC1155Holder {
+contract SpudGame is ERC1155Holder, VRFV2WrapperConsumerBase {
     /////////////////////////////////////////////////////////////////////////////
     //                                  Constants                              //
     /////////////////////////////////////////////////////////////////////////////
@@ -21,6 +24,18 @@ contract SpudGame is ERC1155Holder {
     uint256 public constant FEE_TO_STEAL = 10_000_000_000_000_000;
     uint256 public constant GAME_DURATION = 1 days;
     Spud public immutable SPUD;
+
+    // VRF
+    uint32 public CALLBACK_GAS_LIMIT = 100_000;
+    uint16 public REQUEST_CONFIRMATIONS = 3;
+    uint32 public NUM_WORDS = 1;
+    uint256 public constant MODULO = 21;
+
+    // Address LINK - hardcoded for Sepolia
+    address public constant LINK_ADDRESS = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+    // address WRAPPER - hardcoded for Sepolia
+    address public constant WRAPPER = 0xab18414CD93297B0d12ac29E63Ca20f515b3DB46;
     /////////////////////////////////////////////////////////////////////////////
     //                                  Storage                                //
     /////////////////////////////////////////////////////////////////////////////
@@ -30,6 +45,8 @@ contract SpudGame is ERC1155Holder {
         uint256 prizePool;
         uint256 deadline;
         uint256 tokenId;
+        uint256 requestId;
+        uint256[] guesses;
         bool exploded;
     }
 
@@ -49,7 +66,7 @@ contract SpudGame is ERC1155Holder {
     event ClaimedPrizePool(uint256 indexed gameId, address indexed winner, uint256 prizePool);
 
     // Create Spud contract
-    constructor() {
+    constructor() VRFV2WrapperConsumerBase(LINK_ADDRESS, WRAPPER) {
         SPUD = new Spud(address(this));
     }
     /////////////////////////////////////////////////////////////////////////////
@@ -91,6 +108,8 @@ contract SpudGame is ERC1155Holder {
             prizePool: msg.value,
             deadline: block.timestamp + GAME_DURATION,
             tokenId: SPUD.currentTokenId() - 1,
+            requestId: 0,
+            guesses: new uint256[](0),
             exploded: false
         });
         // Increase game nonce
@@ -103,7 +122,11 @@ contract SpudGame is ERC1155Holder {
 
     /// @notice Steal NFT from other player, by depositing more ether
     /// @param _gameId Game ID to steal
-    function stealNFT(uint256 _gameId) external payable {
+    function stealNFT(uint256 _gameId, uint256 _guess) external payable {
+        // Require guess to be between 0 and 20
+        if (_guess > 20) {
+            revert GameErrors.InvalidGuess();
+        }
         Game storage game = games[_gameId];
         // Check if game is still active
         if (block.timestamp > game.deadline) {
@@ -117,8 +140,11 @@ contract SpudGame is ERC1155Holder {
         game.currentSpudOwner = msg.sender;
         game.prizePool += msg.value;
         etherBalance += msg.value;
+        game.guesses.push(_guess);
         emit NFTStolen(_gameId, oldOwner, msg.sender, game.prizePool);
-        // TODO: Logic to explode and end the game based on random number
+        // Make request to VRF to generate random words
+        uint256 requestId = requestRandomness(CALLBACK_GAS_LIMIT, REQUEST_CONFIRMATIONS, NUM_WORDS);
+        game.requestId = requestId;
     }
 
     /// @notice Claim prize pool of the game if the game has ended
@@ -136,5 +162,24 @@ contract SpudGame is ERC1155Holder {
         // Transfer NFT to the current owner too
         SPUD.safeTransferFrom(address(this), game.currentSpudOwner, game.tokenId, 1, "");
         emit ClaimedPrizePool(_gameId, game.currentSpudOwner, game.prizePool);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                                   VRF hook                              //
+    /////////////////////////////////////////////////////////////////////////////
+    function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
+        // Search for game with the request ID
+        for (uint256 i = 0; i < currentGameNonce; i++) {
+            Game storage game = games[i];
+            if (game.requestId == _requestId) {
+                // Iterate over all guesses made and if one of them matches the random word, explode the game
+                for (uint256 j = 0; j < game.guesses.length; j++) {
+                    if (_randomWords[0] % MODULO == game.guesses[j]) {
+                        game.exploded = true;
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
