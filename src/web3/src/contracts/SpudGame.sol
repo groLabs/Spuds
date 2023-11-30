@@ -130,7 +130,7 @@ contract SpudGame is ERC1155Holder {
         // Update game
         game.exploded = true;
         // Transfer prize pool to the current owner
-        payable(game.currentSpudOwner).transfer(game.prizePool);
+        payable(game.currentSpudOwner).call{ value: game.prizePool }("");
         etherBalance -= game.prizePool;
 
         // Transfer NFT to the current owner too
