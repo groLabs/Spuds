@@ -4,13 +4,23 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 import "../contracts/SpudGame.sol";
 import "../contracts/SpudNFT.sol";
+import "../../../../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
 contract SpudGameTest is Test {
+    using stdStorage for StdStorage;
+
     SpudGame public spudGame;
     Spud public spud;
     address public player;
+    ERC20 public LINK = ERC20(address(0x779877A7B0D9E8603169DdbD7836e478b4624789));
+
+    function setStorage(address _user, bytes4 _selector, address _contract, uint256 value) public {
+        uint256 slot = stdstore.target(_contract).sig(_selector).with_key(_user).find();
+        vm.store(_contract, bytes32(slot), bytes32(value));
+    }
 
     function setUp() public {
+        vm.createSelectFork("sepolia", 4_827_169);
         // Deploy the SpudGame contract and the Spud contract within it
         spudGame = new SpudGame();
         spud = spudGame.SPUD();
@@ -36,12 +46,15 @@ contract SpudGameTest is Test {
         assertTrue(spud.balanceOf(address(spudGame), 0) == 1);
     }
 
-    function testStealNFT() public {
+    function testStealNFT(uint256 guess) public {
+        bound(guess, 0, 20);
         // Another player tries to steal the NFT
         address thief = address(2);
         vm.deal(thief, 1 ether);
 
         vm.startPrank(thief);
+        // Give LINK to the contract
+        setStorage(address(spudGame), LINK.balanceOf.selector, address(LINK), 100e18);
         spudGame.stealNFT{ value: 1 ether }(0, 10);
         vm.stopPrank();
 
