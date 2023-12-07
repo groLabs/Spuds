@@ -7,7 +7,8 @@ import { CoinbaseWalletConnector } from "wagmi/connectors/coinbaseWallet";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 import { ConnectWallet } from "./wallet/ConnectWallet";
 import { GameProvider } from "./game/GameProvider";
-import { JoinGame } from "./game/JoinGame";
+import { Potato } from "./game/components/Potato";
+import { PotatoStatus } from "./game/game.types";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [mainnet],
@@ -44,7 +45,7 @@ function App() {
         <>
           <Typography>Hello</Typography>
           <ConnectWallet />
-          <JoinGame />
+          <Potato plays={10} prize={1000} status={PotatoStatus.mintFresh} />
         </>
       </GameProvider>
     </WagmiConfig>
