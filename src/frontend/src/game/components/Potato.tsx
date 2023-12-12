@@ -16,9 +16,20 @@ export function Potato({
   plays,
   status,
 }: PotatoProps): React.ReactElement {
+
+  const color = useMemo(() => {
+    switch (status) {
+      case PotatoStatus.claimable:
+        return plays === 0 ? "#8BF4C8" : "#F79BFF";
+      default:
+        return "#ffbd5b";
+    }
+  }, [status, plays]);
+
   const styles = {
     wrap: css`
       width: 296px;
+      min-width: 296px;
       height: 400px;
       border-radius: 20px;
       background-image: url(${status === PotatoStatus.mintFresh
@@ -30,6 +41,7 @@ export function Potato({
       flex-direction: column;
       justify-content: flex-end;
       padding: 8px;
+      box-sizing: border-box;
     `,
     statusBox: css`
       padding: 14px 10px;
@@ -38,19 +50,19 @@ export function Potato({
       border-radius: 12px;
     `,
     typography: css`
-      color: #ffbd5b;
-      font-weight: 600;
+      color: ${color};
+      font-weight: 500;
       text-align: left;
     `,
     button: css`
       border-radius: 4px;
-      background: #ffbd5b;
-      height: 54px;
+      background: ${color};
+      height: 40px;
       color: black;
       text-transform: none;
-      font-weight: 600;
+      font-weight: 500;
       &:hover {
-        background: #ffbd5b;
+        background: ${color};
         opacity: 0.7;
       }
     `,
@@ -61,13 +73,33 @@ export function Potato({
       case PotatoStatus.canSteal:
         return "Steal";
       case PotatoStatus.claimable:
-        return "Claim prize";
+        return "Claim reward";
       case PotatoStatus.mintFresh:
         return "Minth fresh potato";
+      case PotatoStatus.lost:
+      case PotatoStatus.holding:
+        return "";
       default:
         break;
     }
   }, [status]);
+
+  const topText = useMemo(() => {
+    switch (status) {
+      case PotatoStatus.canSteal:
+        return "0x0000...0000 is holding";
+      case PotatoStatus.claimable:
+        return plays === 0 ? "You won!" : "You won!... But too early";
+      case PotatoStatus.mintFresh:
+        return "";
+      case PotatoStatus.lost:
+        return "0x0000...0000 beat you";
+      case PotatoStatus.holding:
+        return "You're holding";
+      default:
+        break;
+    }
+  }, [status, plays]);
 
   useEffect(() => {}, []);
 
@@ -76,17 +108,26 @@ export function Potato({
       <Box css={styles.statusBox}>
         {status !== PotatoStatus.mintFresh && (
           <>
-            <Typography mb={0.5} css={styles.typography}>
-              Prize: ${prize}
-            </Typography>
-            <Typography mb={1.5} css={styles.typography}>
-              Plays: {plays}
-            </Typography>
+            <Typography css={styles.typography}>{topText}</Typography>
+
+            <Box display="flex">
+              <Typography mr={1.5} css={styles.typography}>
+                Plays: {plays}
+              </Typography>
+              <Typography css={styles.typography}>Prize: ${prize}</Typography>
+            </Box>
           </>
         )}
-        <Button variant="contained" fullWidth css={styles.button}>
-          {buttonText}
-        </Button>
+        {![PotatoStatus.lost, PotatoStatus.holding].includes(status) && (
+          <Button
+            sx={{ mt: 1.5 }}
+            variant="contained"
+            fullWidth
+            css={styles.button}
+          >
+            {buttonText}
+          </Button>
+        )}
       </Box>
     </Box>
   );

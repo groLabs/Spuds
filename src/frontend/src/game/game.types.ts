@@ -1,5 +1,7 @@
 export enum PotatoStatus {
     canSteal = 'canSteal',
     claimable = 'claimable',
-    mintFresh = 'mintFresh'
+    mintFresh = 'mintFresh',
+    lost = 'lost',
+    holding = 'holding'
 }

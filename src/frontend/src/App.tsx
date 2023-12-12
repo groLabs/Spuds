@@ -1,5 +1,3 @@
-import "./App.css";
-import { Typography } from "@mui/material";
 import { configureChains, mainnet, createConfig, WagmiConfig } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { publicProvider } from "wagmi/providers/public";
@@ -7,8 +5,7 @@ import { CoinbaseWalletConnector } from "wagmi/connectors/coinbaseWallet";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 import { ConnectWallet } from "./wallet/ConnectWallet";
 import { GameProvider } from "./game/GameProvider";
-import { Potato } from "./game/components/Potato";
-import { PotatoStatus } from "./game/game.types";
+import { Landing } from "./game/pages/Landing";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [mainnet],
@@ -43,9 +40,8 @@ function App() {
     <WagmiConfig config={config}>
       <GameProvider>
         <>
-          <Typography>Hello</Typography>
-          <ConnectWallet />
-          <Potato plays={10} prize={1000} status={PotatoStatus.mintFresh} />
+          {/* <ConnectWallet /> */}
+          <Landing />
         </>
       </GameProvider>
     </WagmiConfig>
