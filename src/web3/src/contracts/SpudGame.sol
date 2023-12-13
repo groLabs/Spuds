@@ -81,7 +81,15 @@ contract SpudGame is ERC1155Holder, VRFV2WrapperConsumerBase {
     function getGame(uint256 _gameId)
         external
         view
-        returns (address currentSpudOwner, uint256 prizePool, uint256 deadline, uint256 tokenId, bool exploded)
+        returns (
+            address currentSpudOwner,
+            uint256 prizePool,
+            uint256 deadline,
+            uint256 tokenId,
+            uint256 requestId,
+            uint256[] memory guesses,
+            bool exploded
+        )
     {
         Game memory game = games[_gameId];
         currentSpudOwner = game.currentSpudOwner;
@@ -89,6 +97,8 @@ contract SpudGame is ERC1155Holder, VRFV2WrapperConsumerBase {
         deadline = game.deadline;
         tokenId = game.tokenId;
         exploded = game.exploded;
+        requestId = game.requestId;
+        guesses = game.guesses;
     }
 
     /////////////////////////////////////////////////////////////////////////////
